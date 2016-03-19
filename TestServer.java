@@ -27,12 +27,13 @@ class UserStatus implements java.io.Serializable {
 public class TestServer {
 
  //public static Vector<UserStatus> Friends=new Vector<UserStatus>(); 
-
+	public static volatile Boolean interClientFlag=false;
+public static volatile HashMap < String, InputStream > InputStreamArray = new HashMap < String, InputStream > ();
  public static volatile HashMap < String, OutputStream > OutputStreamArray = new HashMap < String, OutputStream > ();
  public static volatile HashMap < String, String > UserPassword = new HashMap < String, String > ();
  public static volatile HashMap < String, Vector < UserStatus >> FriendList = new HashMap < String, Vector < UserStatus > > ();
- private static volatile Map < String, Vector < UserStatus >> FriendRequestList = new HashMap < String, Vector < UserStatus >> ();
-
+ public static volatile Map < String, Vector < UserStatus >> FriendRequestList = new HashMap < String, Vector < UserStatus >> ();
+ public static volatile String user_file[]=null;
  public static volatile HashMap < Integer, UserStatus > OnlineFolks = new HashMap < Integer, UserStatus > ();
 
 
@@ -47,7 +48,7 @@ public class TestServer {
 
    while (true) {
     Socket s = ss.accept(); //TCP Connection
-    WorkerThread wt = new WorkerThread(s, id, UserPassword, FriendList, FriendRequestList, OnlineFolks, OutputStreamArray);
+    WorkerThread wt = new WorkerThread(s, id, UserPassword, FriendList, FriendRequestList, OnlineFolks, OutputStreamArray, InputStreamArray);
     Thread t = new Thread(wt);
     t.start();
     workerThreadCount++;
@@ -76,6 +77,8 @@ class WorkerThread implements Runnable {
  private static volatile Map < String, Vector < UserStatus >> FriendList;
  private static volatile Map < String, Vector < UserStatus >> FriendRequestList;
  private static volatile Map < String, OutputStream > OutputStreamArray;
+ private static volatile Map < String, InputStream > InputStreamArray;
+ 
  private static volatile Map < Integer, UserStatus > OnlineFolks;
  private static PrintWriter friend_pr;
  private int id = 0;
@@ -83,7 +86,7 @@ class WorkerThread implements Runnable {
 
  String userID = null;
 
- public WorkerThread(Socket s, int id, Map < String, String > UserPassword, HashMap < String, Vector < UserStatus >> FriendList, Map < String, Vector < UserStatus >> FriendRequestList, Map < Integer, UserStatus > OnlineFolks, HashMap < String, OutputStream > OutputStreamArray) {
+ public WorkerThread(Socket s, int id, Map < String, String > UserPassword, HashMap < String, Vector < UserStatus >> FriendList, Map < String, Vector < UserStatus >> FriendRequestList, Map < Integer, UserStatus > OnlineFolks, HashMap < String, OutputStream > OutputStreamArray, Map<String, InputStream> InputStreamArray) {
   this.socket = s;
 
   try {
@@ -99,6 +102,7 @@ class WorkerThread implements Runnable {
    this.OnlineFolks = OnlineFolks;
    this.OnlineFolks.put(id, new UserStatus("Guest" + Integer.toString(id), true));
    this.OutputStreamArray = OutputStreamArray;
+   this.InputStreamArray= InputStreamArray;
 
   } catch (Exception e) {
    System.err.println("Sorry. Cannot manage client [" + id + "] properly.");
@@ -122,7 +126,7 @@ class WorkerThread implements Runnable {
   while (true) {
    try {
 
-
+	   	
     if ((str = br.readLine()) != null) {
 
 
@@ -172,6 +176,7 @@ class WorkerThread implements Runnable {
           pr.flush();
           OnlineFolks.put(id, new UserStatus(userID, true));
           OutputStreamArray.put(userID, this.socket.getOutputStream());
+          InputStreamArray.put(userID, this.socket.getInputStream());
 
           //friendList container initialized
           if ((str = br.readLine()) != null) {
@@ -194,10 +199,10 @@ class WorkerThread implements Runnable {
 
                if (str.equals("chat")) {
 
-            	   pr.println("Welcome"+userID);
+            	   pr.println("Welcome "+userID+".");
             	   pr.flush();
             	   
-            	   System.out.println("I am in the chat branch " );
+            	  // System.out.println("I am in the chat branch " );
             	   
                 if ((str = br.readLine()) != null) { //expecting friend's ID
 
@@ -207,9 +212,8 @@ class WorkerThread implements Runnable {
                  if (OutputStreamArray.containsKey(str)) {
                   friend_os = OutputStreamArray.get(str);
                   friend_pr = new PrintWriter(friend_os);
-                  System.out.println("Yes. it contains!");
                   
-                  
+                 
                  }
                  
                 }
@@ -236,7 +240,128 @@ class WorkerThread implements Runnable {
 
 }
 
-               if (str.equals("file_transfer")) {
+               else if (str.equals("file_transfer")) {
+            	   
+            	   //sender ready? 
+            	   //receiver ready? 
+            	   String friend_id=null;
+           			 
+            	   
+            	   while(true){
+            	   
+            		   if((str=br.readLine())!=null){ //sender ready
+            		   
+            		   
+            		   if(str.equals("S")){ //sender ready
+            			   if((str=br.readLine())!=null){
+            				   
+            			   
+            			   TestServer.interClientFlag= true;
+            			   System.out.println(str);
+            			   TestServer.user_file= str.split(",");
+
+       				   	System.out.println("Inside S: My name is: "+ userID + " "+ TestServer.interClientFlag);
+       				   	pr.println("S_OK");
+       				   	pr.flush();
+            			   break;
+            			   
+            		   }
+            			   
+            			   
+            			   
+            		   }
+            		   
+            		   
+            		   
+            		   if(str.equals("R") && TestServer.interClientFlag){ // interClientFlag true means, clientA has given the goods
+            			   
+   
+               			
+            			   if(userID.equals(TestServer.user_file[0]))  //amakei khujtesilo arek ta client, right? hmm. 
+            				   {
+            				   	User_on_flag=false;
+            				   	System.out.println("Inside R: My name is: "+ userID + " File ID: " + TestServer.user_file[1]);
+            				   	pr.println("S_OK");
+               				   	pr.flush();
+                    			
+            				   	
+            				   
+            				   }
+            			   break;
+            			   
+            		   }
+            		   
+            	   }
+            	   
+            	   }
+            	   if(!User_on_flag){
+            	   
+            	    //eikhane abar ki porbe? 
+            	   
+            	   String file_name=null;
+            	   			
+            	   			while(true){
+            	   				
+
+                    	   		if((str=br.readLine())!=null){
+                    	   			if(str.equals("R_OK")){
+                    	   				System.out.println("Receiver ready!");
+                    	   				break;
+                    	   			
+                    	   			}
+            	   				
+                    	   		}
+                    	   		
+            	   				
+            	   			}
+            	   		
+            	   
+            	   
+            		      try {
+            		       File file = new File(TestServer.user_file[1]);
+            		       FileInputStream fis = new FileInputStream(file);
+            		       BufferedInputStream bis = new BufferedInputStream(fis);
+            		       OutputStream os = socket.getOutputStream();
+            		       byte[] contents;
+            		       long fileLength = file.length();
+            		       long current = 0;
+
+            		       long start = System.nanoTime();
+            		       delay(1000000000);
+
+            		       while (current != fileLength) {
+            		        int size = 10000;
+            		        byte mark;
+
+            		        if (fileLength - current > size) {
+            		         current += size;
+            		         mark = 1;
+            		        } else {
+            		         size = (int)(fileLength - current);
+            		         current = fileLength;
+            		         mark = 0;
+            		        }
+            		        contents = new byte[size + 1];
+            		        bis.read(contents, 0, size);
+            		        contents[size] = mark;
+            		        os.write(contents);
+            		        System.out.println("Sending file ... " + (current * 100) / fileLength + "% complete!");
+            		       }
+
+            		       os.flush();
+            		       System.out.println("File sent successfully!");
+            		       delay(100000);
+            		      } catch (Exception e) {
+            		       e.printStackTrace();
+            		       System.err.println("Could not transfer file.");
+            		      }
+            		      pr.println("Downloaded.");
+            		      pr.flush();
+            	   
+            		   User_on_flag=true;  
+            	   
+            	   }
+            	   
 
 
                } else if (str.equals("##")) {
@@ -513,49 +638,9 @@ class WorkerThread implements Runnable {
       OnlineFolks.remove(id);
 
       break; // terminate the loop; it will terminate the thread also
-     } else if (str.equals("DL")) {
-      try {
-       File file = new File("cat and chicken for server.jpg");
-       FileInputStream fis = new FileInputStream(file);
-       BufferedInputStream bis = new BufferedInputStream(fis);
-       OutputStream os = socket.getOutputStream();
-       byte[] contents;
-       long fileLength = file.length();
-       long current = 0;
-
-       long start = System.nanoTime();
-       delay(100000);
-
-       while (current != fileLength) {
-        int size = 10000;
-        byte mark;
-
-        if (fileLength - current > size) {
-         current += size;
-         mark = 1;
-        } else {
-         size = (int)(fileLength - current);
-         current = fileLength;
-         mark = 0;
-        }
-        contents = new byte[size + 1];
-        bis.read(contents, 0, size);
-        contents[size] = mark;
-        os.write(contents);
-        System.out.println("Sending file ... " + (current * 100) / fileLength + "% complete!");
-       }
-
-       os.flush();
-       System.out.println("File sent successfully!");
-       delay(100000);
-      } catch (Exception e) {
-       e.printStackTrace();
-       System.err.println("Could not transfer file.");
-      }
-      pr.println("Downloaded.");
-      pr.flush();
-
-     } else {
+     } 
+     
+     else {
       System.out.println("[" + id + "] says: " + str);
       pr.println("Got it. You sent \"" + str + "\"");
       pr.flush();

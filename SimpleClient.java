@@ -1,6 +1,6 @@
 	import java.io.*;
-	import java.net.*;
-	import java.util.*;
+import java.net.*;
+import java.util.*;
 
 
 	class UserStatus implements java.io.Serializable {
@@ -134,8 +134,104 @@
 	       System.out.println("I was here with this value: " + strSend);
 
 	       String str = null;
+	       
+	       
+	       if(strSend.equals("file_transfer")){
+	    	   
+	    	   //do you wanna receive or share? 
+	    	   
+		    	   System.out.print("Press S to send, Press R to receive.");
+			       try {
+			        strSend = input.nextLine();
+			       } catch (Exception e) {
+			        continue;
+			       }
+			       
+			       pr.println(strSend);
+			       pr.flush();              //S or R jacce 
+			       String test[]=null;
+			     
+			       if(strSend.equals("S")){
+			    	   
+			    	   System.out.println("Press userID,fileID.");
+				          
+			    	   try {
+			    		   
+					        strSend = input.nextLine(); //send userID and file ID
+					       } catch (Exception e) {
+					        continue;
+					       }
 
-	       if (strSend.equals("chat")) {
+			    	   	System.out.println("Before split:" +strSend);
+					       test= strSend.split(",");
+					       System.out.println(test[0] + " " + test[1]);
+					       pr.println(strSend);
+					       pr.flush();
+					       
+			    	   
+			       }
+			       
+			       //System.out.println("I am: "+ test[0] + "");
+			       
+			       if(((str=br.readLine())!=null)){ //Get S_OK here
+			    	
+			    	   System.out.println("I am here with: " + str);
+			    	   
+			        if(strSend.equals("R")){
+			        	
+
+				    	   System.out.println("This should work");
+				    	   
+				    
+	    		    try {
+	    		     byte[] contents = new byte[10001];
+	    		    
+	    		     File myFile = new File("File.txt");
+	    		     if(!myFile.exists()) {
+	    		    	 
+	    		         myFile.createNewFile();
+	    		     } 
+	    		     
+	    		     if(!myFile.exists()){
+	    		    	 
+	    		    	 System.out.println("It did not work");
+	    		     }
+	    		     
+	    		     else {
+	    		    	 System.out.println("It did  work");
+	    		     }
+	    		     pr.println("R_OK");
+	    		     pr.flush();
+
+	    		     FileOutputStream fos = new FileOutputStream(myFile, false);
+	    		     BufferedOutputStream bos = new BufferedOutputStream(fos);
+	    		     InputStream is = s.getInputStream();
+
+	    		     int bytesRead = 0;
+
+	    		     while ((bytesRead = is.read(contents)) != -1) {
+	    		      bos.write(contents, 0, bytesRead - 1); //write n bytes, 0 to n-1 	// source of data, source offset, length 
+	    		      byte mark = contents[bytesRead - 1]; //nth byte has 0 or 1 , will use 0 if I want to terminate 
+	    		      if (mark == 0) //This is a protocol baby , lame but still a protocol. 
+	    		       break;
+	    		      //System.out.println("bos is busy , mark = "+mark);
+	    		     }
+
+	    		     bos.flush();
+	    		     //System.out.println("bos flushed");
+	    		    } catch (Exception e) {
+	    		     e.printStackTrace();
+	    		     System.err.println("Could not transfer file.");
+	    		    }
+
+	    		   
+			       }
+			        
+			       }
+	    	   
+	       }
+
+	       else if (strSend.equals("chat")) {
 	        
 	    	   
 	    	   System.out.println("First Enter a user then write messages, type BYE to end chat ");
@@ -158,11 +254,6 @@
 	       pr.flush();
 
 	       
-
-	       if ((str = br.readLine()) != null) {
-	    	   System.out.println("is this ever reached?");
-	          System.out.println(str);	          		        
-	         }
 
 	        
 	        while (true) {
@@ -351,28 +442,9 @@
 	        System.out.println("\n\n----------------------------------Logged out------------------------------------\n\n");
 	        break;
 	       }
-
-
-
-
-
-
-
 	      }
-
-
-
-
-
 	     }
-
-
-
-
 	    }
-
-
-
 
 
 
@@ -407,32 +479,7 @@
 	    System.out.println("Client wishes to terminate the connection. Exiting main.");
 	    break;
 	   }
-	   if (strSend.equals("DL")) {
-	    try {
-	     byte[] contents = new byte[10001];
 
-	     FileOutputStream fos = new FileOutputStream("cat and chicken for client.jpg");
-	     BufferedOutputStream bos = new BufferedOutputStream(fos);
-	     InputStream is = s.getInputStream();
-
-	     int bytesRead = 0;
-
-	     while ((bytesRead = is.read(contents)) != -1) {
-	      bos.write(contents, 0, bytesRead - 1); //write n bytes, 0 to n-1 	// source of data, source offset, length 
-	      byte mark = contents[bytesRead - 1]; //nth byte has 0 or 1 , will use 0 if I want to terminate 
-	      if (mark == 0) //This is a protocol baby , lame but still a protocol. 
-	       break;
-	      //System.out.println("bos is busy , mark = "+mark);
-	     }
-
-	     bos.flush();
-	     //System.out.println("bos flushed");
-	    } catch (Exception e) {
-	     e.printStackTrace();
-	     System.err.println("Could not transfer file.");
-	    }
-
-	   }
 
 	  }
 
