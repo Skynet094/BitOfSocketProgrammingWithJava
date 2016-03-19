@@ -1,8 +1,36 @@
 import java.io.*;
 import java.net.*;
 
+
+class UserStatus implements java.io.Serializable {
+
+ /**
+  * 
+  */
+ private static final long serialVersionUID = 1L;
+ String userName;
+ Boolean status;
+
+ UserStatus(String userName, Boolean status) {
+
+  this.userName = userName;
+  this.status = status;
+
+ }
+
+}
+
+
 public class TestServer {
 
+	
+ public static volatile HashMap < String, OutputStream > OutputStreamArray = new HashMap < String, OutputStream > ();
+ public static volatile HashMap < String, String > UserPassword = new HashMap < String, String > ();
+ public static volatile HashMap < String, Vector < UserStatus >> FriendList = new HashMap < String, Vector < UserStatus > > ();
+ private static volatile Map < String, Vector < UserStatus >> FriendRequestList = new HashMap < String, Vector < UserStatus >> ();
+
+ public static volatile HashMap < Integer, UserStatus > OnlineFolks = new HashMap < Integer, UserStatus > ();
+	
 	
 	public static Map UserList= new HashMap();
     public static int workerThreadCount = 0;

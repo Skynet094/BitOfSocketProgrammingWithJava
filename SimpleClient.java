@@ -3,8 +3,38 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+
+
+	class UserStatus implements java.io.Serializable {
+
+	 /**
+	  * 
+	  */
+	 private static final long serialVersionUID = 1L;
+	 String userName;
+	 Boolean status;
+
+
+	 UserStatus(String userName, Boolean status) {
+
+	  this.userName = userName;
+	  this.status = status;
+	 }
+
+	}
+
+
+
+
 public class SimpleClient {
 
+	 private static Vector < UserStatus > FriendRequestList = new Vector < UserStatus > ();
+	 private static HashMap < Integer, UserStatus > OnlineFolks = new HashMap < Integer, UserStatus > ();
+	 public static volatile Vector < UserStatus > FriendList = new Vector < UserStatus > ();
+    
+    //data structures
+		    
+    //streams
     private static Socket s = null;
     private static BufferedReader br = null;
     private static PrintWriter pr = null;
