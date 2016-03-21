@@ -30,7 +30,7 @@ import java.util.*;
 	 private static BufferedReader br = null;
 	 private static PrintWriter pr = null;
 	 private static InputStream is = null;
-
+	 private static String userID=null;
 	 private static ObjectInputStream i_Stream = null;
 
 	 public static void main(String args[]) throws IOException {
@@ -48,8 +48,9 @@ import java.util.*;
 	   System.exit(1);
 	  }
 
-	  Scanner input = new Scanner(System.in);
-	  String strSend = null, strRecv = null;
+	  final Scanner input = new Scanner(System.in);
+	  String strSend = null;
+	String strRecv = null;
 
 	  try {
 	   strRecv = br.readLine();
@@ -112,9 +113,11 @@ import java.util.*;
 	      System.out.println("iv)@@ to Add/Reject from Friend Requests \n");
 
 	      System.out.println("v)## to View Friend list \n");
-	      System.out.println("vi)chat to Chat with a friend\n");
 
-	      System.out.println("vii) Q to logout\n");
+	      System.out.println("vi)chat to Chat with a friend\n");
+	      System.out.println("vii)ft to file transfer \n");
+
+	      System.out.println("viii) Q to logout\n");
 	      //System.out.println("Main Menu: ");
 	      //System.out.println("Main Menu: ");
 
@@ -131,12 +134,12 @@ import java.util.*;
 	       pr.println(strSend);
 	       pr.flush();
 
-	       System.out.println("I was here with this value: " + strSend);
+	      // System.out.println("I was here with this value: " + strSend);
 
 	       String str = null;
 	       
 	       
-	       if(strSend.equals("file_transfer")){
+	       if(strSend.equals("ft")){
 	    	   
 	    	   //do you wanna receive or share? 
 	    	   
@@ -162,9 +165,9 @@ import java.util.*;
 					        continue;
 					       }
 
-			    	   	System.out.println("Before split:" +strSend);
-					       test= strSend.split(",");
-					       System.out.println(test[0] + " " + test[1]);
+			    	   //	System.out.println("Before split:" +strSend);
+					     //  test= strSend.split(",");
+					   //    System.out.println(test[0] + " " + test[1]);
 					       pr.println(strSend);
 					       pr.flush();
 					       
@@ -175,12 +178,12 @@ import java.util.*;
 			       
 			       if(((str=br.readLine())!=null)){ //Get S_OK here
 			    	
-			    	   System.out.println("I am here with: " + str);
+			    	 //  System.out.println("I am here with: " + str);
 			    	   
 			        if(strSend.equals("R")){
 			        	
 
-				    	   System.out.println("This should work");
+				    //	   System.out.println("This should work");
 				    	   
 				    
 	    		    try {
@@ -191,16 +194,8 @@ import java.util.*;
 	    		    	 
 	    		         myFile.createNewFile();
 	    		     } 
-	    		     
-	    		     if(!myFile.exists()){
-	    		    	 
-	    		    	 System.out.println("It did not work");
-	    		     }
-	    		     
-	    		     else {
-	    		    	 System.out.println("It did  work");
-	    		     }
-	    		     pr.println("R_OK");
+	    		    
+	    		     pr.println("R_OK"); //receiver ready, one way handshake
 	    		     pr.flush();
 
 	    		     FileOutputStream fos = new FileOutputStream(myFile, false);
@@ -236,7 +231,7 @@ import java.util.*;
 	    	   
 	    	   System.out.println("First Enter a user then write messages, type BYE to end chat ");
 	        
-	        if ((str = br.readLine()) != null) {
+	        if ((str = br.readLine()) != null) {   //Welcome user!!
 
 		          System.out.println(str);
 		         }
@@ -250,33 +245,61 @@ import java.util.*;
 	          continue;
 	         }
 	         
-	       pr.println(strSend);
+	       pr.println(strSend); //sending Friend's ID , as in I WANT TO CHAT WITH *THIS FRIEND*
 	       pr.flush();
 
+	    	   
+	    	   
+	    
+	       Thread thread2= new Thread(new Runnable(){
+
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				String str= null;
+
+		        while (!Thread.interrupted()) {
+		        	
+		         		       
+			       
+			       try {
+					if ((str = br.readLine()) != null) {    //receiving from server 
+						  // System.out.println("is this ever reached?");
+					      System.out.println(str);	
+					      Thread.sleep(1000);
+					     }
+				} catch (IOException | InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		       	}
+		        
+				
+			}});
 	       
+	       
+	       thread2.start();
+	       
+			while(true){
+				
+		          try {
+			           strSend = input.nextLine();
+			       //   System.out.println("Send this to server "+ strSend);
+			         } catch (Exception e) {
+			          continue;
+			         }
 
-	        
-	        while (true) {
-	        	
-	         
-	          try {
-		          strSend = input.nextLine();
-		          System.out.println("Send this to server "+ strSend);
-		         } catch (Exception e) {
-		          continue;
-		         }
+			       pr.println(strSend); //sending to server
+			       pr.flush();
+			       
+			       if(strSend.equals("BYE"))
+			    	   break;
+			      
 
-		       pr.println(strSend);
-		       pr.flush();
-		       
-		       if ((str = br.readLine()) != null) {
-		    	   System.out.println("is this ever reached?");
-		          System.out.println(str);	          		        
-		         }
+				}
 
-
-}
-	        
+	       
+	       
 	       }
 
 	        if (strSend.equals("##")) {
@@ -506,6 +529,7 @@ import java.util.*;
 	     if (Flag) {
 	      try {
 	       strSend = input.nextLine(); //give userID
+	       userID=strSend;
 	       pr.println(strSend);
 	       pr.flush();
 
